@@ -8,4 +8,7 @@ VERCEL_CONFIG = {
     "env": {
         "OPENAI_API_KEY": "@openai-api-key"
     }
+    "routes": [
+        { "src": "/api/alexa", "dest": "api/alexa.py" }
+      ]
 }
