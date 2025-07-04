@@ -1,7 +1,5 @@
-# api/alexa.py (Vercel Serverless Function)
 import json
 import os
-from typing import Dict, Any
 from openai import OpenAI
 import logging
 
@@ -12,24 +10,32 @@ logger = logging.getLogger(__name__)
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-def handler(request):
+def handler(request, context):
     """
     Main Vercel serverless function handler
     Processes Alexa requests and returns responses
     """
     try:
-        # Parse the request
-        if request.method != 'POST':
+        # Add a simple GET endpoint for testing
+        if hasattr(request, 'method') and request.method == 'GET':
             return {
-                'statusCode': 405,
-                'body': json.dumps({'error': 'Method not allowed'})
+                'statusCode': 200,
+                'body': json.dumps({
+                    'message': 'Alexa AI Agent is running!',
+                    'timestamp': str(context.get('timestamp', 'unknown')),
+                    'openai_configured': bool(os.getenv('OPENAI_API_KEY'))
+                })
             }
         
-        # Get the request body
-        alexa_request = json.loads(request.body) if hasattr(request, 'body') else request.json
+        # For Vercel, the request body is already parsed
+        alexa_request = request
+        
+        # Log the incoming request for debugging
+        logger.info(f"Received request: {json.dumps(alexa_request, indent=2)}")
         
         # Verify this is an Alexa request
         if not alexa_request.get('request'):
+            logger.error("Invalid Alexa request - no 'request' field")
             return {
                 'statusCode': 400,
                 'body': json.dumps({'error': 'Invalid Alexa request'})
@@ -38,29 +44,23 @@ def handler(request):
         # Process the request
         response = process_alexa_request(alexa_request)
         
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-            },
-            'body': json.dumps(response)
-        }
+        logger.info(f"Returning response: {json.dumps(response)}")
+        return response
         
     except Exception as e:
         logger.error(f"Error processing request: {str(e)}")
         return {
-            'statusCode': 500,
-            'body': json.dumps({
-                'version': '1.0',
-                'response': {
-                    'outputSpeech': {
-                        'type': 'PlainText',
-                        'text': 'Sorry, I encountered an error. Please try again.'
-                    },
-                    'shouldEndSession': True
-                }
-            })
+            'version': '1.0',
+            'response': {
+                'outputSpeech': {
+                    'type': 'PlainText',
+                    'text': 'Sorry, I encountered an error. Please try again.'
+                },
+                'shouldEndSession': True
+            }
         }
+
+from typing import Dict, Any
 
 def process_alexa_request(alexa_request: Dict[str, Any]) -> Dict[str, Any]:
     """
