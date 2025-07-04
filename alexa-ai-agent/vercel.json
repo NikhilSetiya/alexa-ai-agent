@@ -1,0 +1,11 @@
+
+VERCEL_CONFIG = {
+    "functions": {
+        "api/alexa.py": {
+            "runtime": "python3.9"
+        }
+    },
+    "env": {
+        "OPENAI_API_KEY": "@openai-api-key"
+    }
+}
