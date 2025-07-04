@@ -1,5 +1,4 @@
-
-VERCEL_CONFIG = {
+{
     "version": 2,
     "functions": {
         "api/alexa.py": {
@@ -11,5 +10,5 @@ VERCEL_CONFIG = {
     },
     "routes": [
         { "src": "/api/alexa", "dest": "api/alexa.py" }
-      ]
+    ]
 }
